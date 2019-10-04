@@ -10,4 +10,5 @@ public class PatternsApplication {
 		SpringApplication.run(PatternsApplication.class, args);
 	}
 
+
 }
