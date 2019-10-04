@@ -1,31 +1,42 @@
 package com.rds.gdpr.patterns;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import java.util.UUID;
+import javax.persistence.*;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@ToString
 @Entity
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private UUID id;
+    private Long id;
 
+    @Version
+    private Integer version;
+
+    @NonNull
     private String name;
 
+    @NonNull
     private String email;
 
+    @NonNull
     private String publicKey;
 
+    @NonNull
     private String privateKey;
+
+    @Builder
+    public User(Long id, Integer version, @NonNull String name, @NonNull String email, @NonNull String publicKey, @NonNull String privateKey) {
+        this.id = id;
+        this.version = version;
+        this.name = name;
+        this.email = email;
+        this.publicKey = publicKey;
+        this.privateKey = privateKey;
+    }
 
 }
