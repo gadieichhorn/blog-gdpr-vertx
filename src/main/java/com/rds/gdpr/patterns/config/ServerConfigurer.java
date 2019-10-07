@@ -1,4 +1,4 @@
-package com.rds.gdpr.patterns;
+package com.rds.gdpr.patterns.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.codec.ServerCodecConfigurer;

@@ -1,21 +1,19 @@
-package com.rds.gdpr.patterns;
+package com.rds.gdpr.patterns.model;
 
 import lombok.*;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-import javax.persistence.*;
+import javax.persistence.Id;
 
 @Data
 @NoArgsConstructor
 @ToString
-@Entity
+
+@Document
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Version
-    private Integer version;
+    private String id;
 
     @NonNull
     private String name;
@@ -30,13 +28,11 @@ public class User {
     private String privateKey;
 
     @Builder
-    public User(Long id, Integer version, @NonNull String name, @NonNull String email, @NonNull String publicKey, @NonNull String privateKey) {
+    public User(String id, @NonNull String name, @NonNull String email, @NonNull String publicKey, @NonNull String privateKey) {
         this.id = id;
-        this.version = version;
         this.name = name;
         this.email = email;
         this.publicKey = publicKey;
         this.privateKey = privateKey;
     }
-
 }
