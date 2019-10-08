@@ -2,10 +2,10 @@ package com.rds.gdpr.patterns;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
-import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.Json;
+import io.vertx.ext.bridge.PermittedOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.api.RequestParameter;
 import io.vertx.ext.web.api.RequestParameters;
@@ -13,6 +13,8 @@ import io.vertx.ext.web.api.contract.RouterFactoryOptions;
 import io.vertx.ext.web.api.contract.openapi3.OpenAPI3RouterFactory;
 import io.vertx.ext.web.api.validation.ValidationException;
 import io.vertx.ext.web.handler.StaticHandler;
+import io.vertx.ext.web.handler.sockjs.BridgeOptions;
+import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import java.text.DateFormat;
@@ -27,7 +29,7 @@ public class MainVerticle extends AbstractVerticle {
 
 
     public void start(Promise future) {
-        // Load the api spec. This operation is asynchronous
+
         OpenAPI3RouterFactory.create(this.vertx, "chat.yml", openAPI3RouterFactoryAsyncResult -> {
 
             if (openAPI3RouterFactoryAsyncResult.failed()) {
@@ -73,49 +75,43 @@ public class MainVerticle extends AbstractVerticle {
                 routingContext.next();
             });
 
-            // Before router creation you can enable/disable various router factory behaviours
-            RouterFactoryOptions factoryOptions = new RouterFactoryOptions()
-//                    .setMountValidationFailureHandler(false) // Disable mounting of dedicated validation failure handler
-                    .setMountResponseContentTypeHandler(true); // Mount ResponseContentTypeHandler automatically
+            Router router = routerFactory.setOptions(new RouterFactoryOptions()
+                    .setMountResponseContentTypeHandler(true))
+                    .getRouter();
 
-            // Now you have to generate the router
-            Router router = routerFactory.setOptions(factoryOptions).getRouter();
+            router.mountSubRouter("/eventbus", SockJSHandler.create(vertx)
+                    .bridge(new BridgeOptions()
+                            .addInboundPermitted(new PermittedOptions()
+                                    .setAddress("chat-service-inbound"))
+                            .addOutboundPermitted(new PermittedOptions()
+                                    .setAddress("chat-service-outbound"))));
 
-            // Allow events for the designated addresses in/out of the event bus bridge
-//            BridgeOptions opts = new BridgeOptions()
-//                    .addInboundPermitted(new PermittedOptions().setAddress("chat.to.server"))
-//                    .addOutboundPermitted(new PermittedOptions().setAddress("chat.to.client"));
-
-            // Create the event bus bridge and add it to the router.
-//            router.route("/eventbus/*").handler(SockJSHandler.create(vertx)
-//                    .bridge(new BridgeOptions()
-//                    .addInboundPermitted(new PermittedOptions())));
-
-            // Create a router endpoint for the static content.
             router.route().handler(StaticHandler.create("webroot"));
 
-            EventBus eb = vertx.eventBus();
+            vertx.eventBus().consumer("chat-service-inbound").handler(message -> {
+                log.info("Chat: {}", message.body());
 
-            // Register to listen for messages coming IN to the server
-            eb.consumer("chat.to.server").handler(message -> {
-                // Create a timestamp string
                 String timestamp = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM).format(Date.from(Instant.now()));
-                // Send the message back out to all clients with the timestamp prepended.
-                eb.publish("chat.to.client", timestamp + ": " + message.body());
+                vertx.eventBus().publish("chat-service-outbound", timestamp + ": " + message.body());
             });
 
-            // Now you can use your Router instance
-            server = vertx.createHttpServer(new HttpServerOptions().setPort(8080).setHost("localhost"));
-            server.requestHandler(router).listen((ar) -> {
-                if (ar.succeeded()) {
-                    log.info("Server started on port {}", ar.result().actualPort());
-                    future.complete();
-                } else {
-                    log.error("oops, something went wrong during server initialization", ar.cause());
-                    future.fail(ar.cause());
-                }
-            });
+            server = vertx.createHttpServer(new HttpServerOptions().setPort(8080).setHost("localhost"))
+                    .requestHandler(router).listen((ar) -> {
+                        if (ar.succeeded()) {
+                            log.info("Server started on port {}", ar.result().actualPort());
+                            future.complete();
+                        } else {
+                            log.error("oops, something went wrong during server initialization", ar.cause());
+                            future.fail(ar.cause());
+                        }
+                    });
         });
+
+        vertx.periodicStream(5000).handler(aLong ->
+                vertx.eventBus().publish("chat-service-inbound", Json.encode(ChatMessage.builder()
+                        .key(UUID.randomUUID())
+                        .message(UUID.randomUUID().toString())
+                        .build())));
 
     }
 

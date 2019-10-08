@@ -25,16 +25,20 @@
 		<div class="row">
 			<div class="col-sm">
 				<h3>Writ something personal</h3>
+
+
 				<div class="input-group mb-3">
-					<input type="text" class="form-control" placeholder="Recipient's username"
+					<input id="input" type="text" class="form-control" placeholder="Recipient's username"
 					       aria-label="Recipient's username" aria-describedby="basic-addon2">
 					<div class="input-group-append">
-						<button class="btn btn-outline-secondary" type="button">Send</button>
+						<button id="submit" class="btn btn-outline-secondary" type="button">Send</button>
 					</div>
 				</div>
 			</div>
 			<div class="col-sm">
 				<h3>Chat history</h3>
+
+				<div id="chat" class="inset"></div>
 
 				<!-- List group -->
 				<div class="list-group" id="myList" role="tablist">
@@ -58,6 +62,7 @@
 
 </div>
 
+
 <!-- Optional JavaScript -->
 <!-- jQuery first, then Popper.js, then Bootstrap JS -->
 <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
@@ -69,5 +74,32 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
         integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
         crossorigin="anonymous"></script>
+<script src="//cdn.jsdelivr.net/sockjs/0.3.4/sockjs.min.js"></script>
+<script src="vertx-eventbus.js"></script>
+
+<script>
+
+	var eb = new EventBus("/eventbus/");
+	eb.onopen = function () {
+	eb.registerHandler("chat-service-outbound", function (err, msg) {
+		console.log(msg);
+       $('#chat').append(msg.body + "\n");
+	});
+	};
+
+	$('#submit').on('click', function(event) {
+		event.preventDefault(); // To prevent following the link (optional)
+		console.log(event);
+		var message = $('#input').val();
+		if (message.length > 0) {
+			console.log(message);
+			eb.publish("chat-service-inbound", message);
+			$('#input').val("");
+		}
+	});
+
+
+</script>
+
 </body>
 </html>
