@@ -37,8 +37,6 @@ public class MainVerticle extends AbstractVerticle {
 
         mongoClient = MongoClient.createShared(vertx, new JsonObject()
                 .put("connection_string", "mongodb://localhost:27017")
-//                .put("username", "admin")
-//                .put("password", "root")
                 .put("db_name", "users"));
 
         serviceBinder = new ServiceBinder(this.vertx);
@@ -47,7 +45,7 @@ public class MainVerticle extends AbstractVerticle {
                 .setAddress("users.proxy")
                 .register(UsersService.class, new UsersServiceImpl(mongoClient));
 
-        OpenAPI3RouterFactory.create(this.vertx, "chat.json", openAPI3RouterFactoryAsyncResult -> {
+        OpenAPI3RouterFactory.create(this.vertx, "webroot/swagger/chat.json", openAPI3RouterFactoryAsyncResult -> {
 
             if (openAPI3RouterFactoryAsyncResult.failed()) {
                 // Something went wrong during router factory initialization
