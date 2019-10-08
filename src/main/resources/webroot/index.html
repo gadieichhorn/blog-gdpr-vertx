@@ -42,21 +42,21 @@
 
 				<div id="chat" class="inset"></div>
 
-				<!-- List group -->
-				<div class="list-group" id="myList" role="tablist">
-					<a class="list-group-item list-group-item-action active" data-toggle="list" href="#home" role="tab">Home</a>
-					<a class="list-group-item list-group-item-action" data-toggle="list" href="#profile" role="tab">Profile</a>
-					<a class="list-group-item list-group-item-action" data-toggle="list" href="#messages" role="tab">Messages</a>
-					<a class="list-group-item list-group-item-action" data-toggle="list" href="#settings" role="tab">Settings</a>
-				</div>
+				<!--				&lt;!&ndash; List group &ndash;&gt;-->
+				<!--				<div class="list-group" id="myList" role="tablist">-->
+				<!--					<a class="list-group-item list-group-item-action active" data-toggle="list" href="#home" role="tab">Home</a>-->
+				<!--					<a class="list-group-item list-group-item-action" data-toggle="list" href="#profile" role="tab">Profile</a>-->
+				<!--					<a class="list-group-item list-group-item-action" data-toggle="list" href="#messages" role="tab">Messages</a>-->
+				<!--					<a class="list-group-item list-group-item-action" data-toggle="list" href="#settings" role="tab">Settings</a>-->
+				<!--				</div>-->
 
-				<!-- Tab panes -->
-				<div class="tab-content">
-					<div class="tab-pane active" id="home" role="tabpanel">...</div>
-					<div class="tab-pane" id="profile" role="tabpanel">...</div>
-					<div class="tab-pane" id="messages" role="tabpanel">...</div>
-					<div class="tab-pane" id="settings" role="tabpanel">...</div>
-				</div>
+				<!--				&lt;!&ndash; Tab panes &ndash;&gt;-->
+				<!--				<div class="tab-content">-->
+				<!--					<div class="tab-pane active" id="home" role="tabpanel">...</div>-->
+				<!--					<div class="tab-pane" id="profile" role="tabpanel">...</div>-->
+				<!--					<div class="tab-pane" id="messages" role="tabpanel">...</div>-->
+				<!--					<div class="tab-pane" id="settings" role="tabpanel">...</div>-->
+				<!--				</div>-->
 
 			</div>
 		</div>
@@ -84,17 +84,16 @@
 	var eb = new EventBus("/eventbus/");
 	eb.onopen = function () {
 	eb.registerHandler("chat-service-outbound", function (err, msg) {
-		console.log(msg);
+<!--		console.log(msg);-->
        $('#chat').append(msg.body + "\n");
 	});
 	};
 
 	$('#submit').on('click', function(event) {
 		event.preventDefault(); // To prevent following the link (optional)
-		console.log(event);
 		var message = $('#input').val();
 		if (message.length > 0) {
-			console.log(message);
+<!--			console.log(message);-->
 			eb.publish("chat-service-inbound", message);
 			$('#input').val("");
 		}
