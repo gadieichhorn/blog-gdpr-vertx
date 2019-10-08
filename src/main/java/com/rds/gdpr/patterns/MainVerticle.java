@@ -10,6 +10,7 @@ import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.bridge.PermittedOptions;
+import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.api.contract.RouterFactoryOptions;
 import io.vertx.ext.web.api.contract.openapi3.OpenAPI3RouterFactory;
@@ -27,17 +28,24 @@ import java.util.UUID;
 @Slf4j
 public class MainVerticle extends AbstractVerticle {
 
+    private MongoClient mongoClient;
     private HttpServer server;
     private ServiceBinder serviceBinder;
     private MessageConsumer<JsonObject> consumer;
 
     public void start(Promise future) {
 
+        mongoClient = MongoClient.createShared(vertx, new JsonObject()
+                .put("connection_string", "mongodb://localhost:27017")
+//                .put("username", "admin")
+//                .put("password", "root")
+                .put("db_name", "users"));
+
         serviceBinder = new ServiceBinder(this.vertx);
 
         consumer = serviceBinder
                 .setAddress("users.proxy")
-                .register(UsersService.class, new UsersServiceImpl(vertx));
+                .register(UsersService.class, new UsersServiceImpl(mongoClient));
 
         OpenAPI3RouterFactory.create(this.vertx, "chat.json", openAPI3RouterFactoryAsyncResult -> {
 
