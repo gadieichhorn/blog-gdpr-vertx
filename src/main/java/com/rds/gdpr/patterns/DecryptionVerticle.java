@@ -27,7 +27,7 @@ public class DecryptionVerticle extends AbstractVerticle {
 
         KafkaConsumer.create(vertx, config)
                 .handler(record -> {
-                    log.info("Processing key={} value={} ,partition={} ,offset={}" + record.key(), record.value(), record.partition(), record.offset());
+                    log.info("Processing key={} value={} ,partition={} ,offset={}", record.key(), record.value(), record.partition(), record.offset());
                     vertx.eventBus().publish("chat-service-outbound", record.value());
                 })
                 .subscribe("chat-messages", startPromise);
