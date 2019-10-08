@@ -7,7 +7,6 @@ import io.vertx.core.Promise;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.bridge.PermittedOptions;
 import io.vertx.ext.mongo.MongoClient;
@@ -20,13 +19,8 @@ import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.serviceproxy.ServiceBinder;
 import lombok.extern.slf4j.Slf4j;
 
-import java.text.DateFormat;
-import java.time.Instant;
-import java.util.Date;
-import java.util.UUID;
-
 @Slf4j
-public class MainVerticle extends AbstractVerticle {
+public class WebServerVerticle extends AbstractVerticle {
 
     private MongoClient mongoClient;
     private HttpServer server;
@@ -71,13 +65,6 @@ public class MainVerticle extends AbstractVerticle {
 
             router.route().handler(StaticHandler.create("webroot"));
 
-            vertx.eventBus().consumer("chat-service-inbound").handler(message -> {
-                log.info("Chat: {}", message.body());
-
-                String timestamp = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM).format(Date.from(Instant.now()));
-                vertx.eventBus().publish("chat-service-outbound", timestamp + ": " + message.body());
-            });
-
             server = vertx.createHttpServer(new HttpServerOptions().setPort(8080).setHost("localhost"))
                     .requestHandler(router).listen((ar) -> {
                         if (ar.succeeded()) {
@@ -90,16 +77,34 @@ public class MainVerticle extends AbstractVerticle {
                     });
         });
 
-        vertx.periodicStream(5000).handler(aLong ->
-                vertx.eventBus().publish("chat-service-inbound", Json.encode(ChatMessage.builder()
-                        .key(UUID.randomUUID())
-                        .message(UUID.randomUUID().toString())
-                        .build())));
+//        vertx.periodicStream(5000).handler(aLong ->
+//                vertx.eventBus().publish("chat-service-inbound", Json.encode(ChatMessage.builder()
+//                        .key(UUID.randomUUID())
+//                        .message(UUID.randomUUID().toString())
+//                        .build())));
+
+//        QueueProducerService service = new ServiceProxyBuilder(vertx)
+//                .setAddress("database-service-address")
+//                .build(QueueProducerService.class);
+
+//        vertx.eventBus().consumer("chat-service-inbound").handler(message -> {
+//            log.info("Chat: {}", message.body());
+//            String timestamp = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM).format(Date.from(Instant.now()));
+//            vertx.eventBus().publish("chat-service-outbound", timestamp + ": " + message.body());
+//            service.create("chat", JsonObject.mapFrom(message.address()), published -> {
+//                if (published.succeeded()) {
+//                    log.info("Published", published.result());
+//                } else {
+//                    log.error("Published error", published.cause());
+//                }
+//            });
+//        });
 
     }
 
     public void stop() {
         this.server.close();
+        consumer.unregister();
     }
 
 }
