@@ -18,15 +18,17 @@
 	<div class="jumbotron">
 		<h1 class="display-4">GDPR Chat</h1>
 		<p class="lead">Demo chat (Vertx.io) application demonstrate how to handle persistent queue messages with
-			sensitive user data (like Kafka)</p>
+			sensitive user data (like support chat)</p>
+		<p class="lead">Chat records that persist into a queue (kafka) are very hard to clean is a user wish to be
+			forgotten.</p>
+		<p class="lead">This demo app persist the chat messages to a queue with encryption, this way we can delete the
+			user private key making all user chat messages inaccessible</p>
 	</div>
 
 	<div class="container">
 		<div class="row">
 			<div class="col-sm">
-				<h3>Writ something personal</h3>
-
-
+				<h3>Write something personal</h3>
 				<div class="input-group mb-3">
 					<input id="input" type="text" class="form-control" placeholder="Recipient's username"
 					       aria-label="Recipient's username" aria-describedby="basic-addon2">

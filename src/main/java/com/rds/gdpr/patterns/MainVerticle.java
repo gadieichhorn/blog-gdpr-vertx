@@ -1,20 +1,22 @@
 package com.rds.gdpr.patterns;
 
+import com.rds.gdpr.patterns.service.UsersService;
+import com.rds.gdpr.patterns.service.UsersServiceImpl;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.bridge.PermittedOptions;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.api.RequestParameter;
-import io.vertx.ext.web.api.RequestParameters;
 import io.vertx.ext.web.api.contract.RouterFactoryOptions;
 import io.vertx.ext.web.api.contract.openapi3.OpenAPI3RouterFactory;
-import io.vertx.ext.web.api.validation.ValidationException;
 import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
+import io.vertx.serviceproxy.ServiceBinder;
 import lombok.extern.slf4j.Slf4j;
 
 import java.text.DateFormat;
@@ -26,11 +28,18 @@ import java.util.UUID;
 public class MainVerticle extends AbstractVerticle {
 
     private HttpServer server;
-
+    private ServiceBinder serviceBinder;
+    private MessageConsumer<JsonObject> consumer;
 
     public void start(Promise future) {
 
-        OpenAPI3RouterFactory.create(this.vertx, "chat.yml", openAPI3RouterFactoryAsyncResult -> {
+        serviceBinder = new ServiceBinder(this.vertx);
+
+        consumer = serviceBinder
+                .setAddress("users.proxy")
+                .register(UsersService.class, new UsersServiceImpl(vertx));
+
+        OpenAPI3RouterFactory.create(this.vertx, "chat.json", openAPI3RouterFactoryAsyncResult -> {
 
             if (openAPI3RouterFactoryAsyncResult.failed()) {
                 // Something went wrong during router factory initialization
@@ -38,46 +47,14 @@ public class MainVerticle extends AbstractVerticle {
                 log.error("oops, something went wrong during factory initialization", exception);
                 future.fail(exception);
             }
-            // Spec loaded with success
-            OpenAPI3RouterFactory routerFactory = openAPI3RouterFactoryAsyncResult.result();
-            // Add an handler with operationId
-            routerFactory.addHandlerByOperationId("listPets", routingContext -> {
-                // Load the parsed parameters
-                RequestParameters params = routingContext.get("parsedParameters");
-                // Handle listPets operation
-                RequestParameter limitParameter = params.queryParameter(/* Parameter name */ "limit");
-                if (limitParameter != null) {
-                    // limit parameter exists, use it!
-                    Integer limit = limitParameter.getInteger();
-                } else {
-                    // limit parameter doesn't exist (it's not required).
-                    // If it's required you don't have to check if it's null!
-                }
-                routingContext.response()
-                        .setStatusMessage("OK")
-                        .end(Json.encode(ChatMessage.builder().key(UUID.randomUUID()).message("ssss").build()));
-            });
-            // Add a failure handler
-            routerFactory.addFailureHandlerByOperationId("listPets", routingContext -> {
-                // This is the failure handler
-                Throwable failure = routingContext.failure();
-                if (failure instanceof ValidationException)
-                    // Handle Validation Exception
-                    routingContext.response()
-                            .setStatusCode(400)
-                            .setStatusMessage("ValidationException thrown! " + ((ValidationException) failure).type().name())
-                            .end();
-            });
 
-            // Add a security handler
-            routerFactory.addSecurityHandler("api_key", routingContext -> {
-                // Handle security here
-                routingContext.next();
-            });
+            OpenAPI3RouterFactory routerFactory = openAPI3RouterFactoryAsyncResult.result()
+                    .mountServicesFromExtensions();
 
             Router router = routerFactory.setOptions(new RouterFactoryOptions()
                     .setMountResponseContentTypeHandler(true))
                     .getRouter();
+
 
             router.mountSubRouter("/eventbus", SockJSHandler.create(vertx)
                     .bridge(new BridgeOptions()
