@@ -1,4 +1,4 @@
-package com.rds.gdpr.patterns.service;
+package com.rds.gdpr.patterns.model;
 
 import lombok.Builder;
 import lombok.Data;

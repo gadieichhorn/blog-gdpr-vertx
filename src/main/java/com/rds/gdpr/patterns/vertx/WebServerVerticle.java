@@ -1,4 +1,4 @@
-package com.rds.gdpr.patterns;
+package com.rds.gdpr.patterns.vertx;
 
 import com.rds.gdpr.patterns.service.UsersService;
 import com.rds.gdpr.patterns.service.UsersServiceImpl;

@@ -1,6 +1,5 @@
-package com.rds.gdpr.patterns;
+package com.rds.gdpr.patterns.vertx;
 
-import com.rds.gdpr.patterns.service.QueueProducerService;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.kafka.client.consumer.KafkaConsumer;
@@ -11,8 +10,6 @@ import java.util.Map;
 
 @Slf4j
 public class DecryptionVerticle extends AbstractVerticle {
-
-    private QueueProducerService queueProducerService;
 
     @Override
     public void start(Promise<Void> startPromise) throws Exception {

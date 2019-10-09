@@ -1,5 +1,6 @@
 package com.rds.gdpr.patterns;
 
+import com.rds.gdpr.patterns.vertx.EncryptionVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
@@ -8,11 +9,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(VertxExtension.class)
-class QueueProducerVerticleTest {
+class EncryptionVerticleTest {
 
     @BeforeEach
     void deploy_verticle(Vertx vertx, VertxTestContext testContext) {
-        vertx.deployVerticle(new QueueProducerVerticle(), testContext.succeeding(id -> testContext.completeNow()));
+        vertx.deployVerticle(new EncryptionVerticle(), testContext.succeeding(id -> testContext.completeNow()));
     }
 
     @Test
