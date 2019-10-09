@@ -12,7 +12,7 @@ public interface UsersService {
 
     void getAllUsers(OperationRequest context, Handler<AsyncResult<OperationResponse>> resultHandler);
 
-    void postUser(JsonObject body, OperationRequest context, Handler<AsyncResult<OperationResponse>> resultHandler);
+    void createUser(JsonObject body, OperationRequest context, Handler<AsyncResult<OperationResponse>> resultHandler);
 
     void updateUser(String id, JsonObject body, OperationRequest context, Handler<AsyncResult<OperationResponse>> resultHandler);
 

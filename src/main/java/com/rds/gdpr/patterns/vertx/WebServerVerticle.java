@@ -42,7 +42,6 @@ public class WebServerVerticle extends AbstractVerticle {
         OpenAPI3RouterFactory.create(this.vertx, "webroot/swagger/chat.json", openAPI3RouterFactoryAsyncResult -> {
 
             if (openAPI3RouterFactoryAsyncResult.failed()) {
-                // Something went wrong during router factory initialization
                 Throwable exception = openAPI3RouterFactoryAsyncResult.cause();
                 log.error("oops, something went wrong during factory initialization", exception);
                 future.fail(exception);
@@ -50,6 +49,10 @@ public class WebServerVerticle extends AbstractVerticle {
 
             OpenAPI3RouterFactory routerFactory = openAPI3RouterFactoryAsyncResult.result()
                     .mountServicesFromExtensions();
+
+            routerFactory.addFailureHandlerByOperationId("createUser", routingContext -> {
+                log.error("Exception", routingContext.failure());
+            });
 
             Router router = routerFactory.setOptions(new RouterFactoryOptions()
                     .setMountResponseContentTypeHandler(true))

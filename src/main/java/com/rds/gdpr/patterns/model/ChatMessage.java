@@ -1,23 +1,20 @@
 package com.rds.gdpr.patterns.model;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 @Data
+@Builder
 @ToString
+@AllArgsConstructor
 @NoArgsConstructor
 public class ChatMessage {
 
+    @NonNull
     private String from;
 
+    @NonNull
     private String message;
 
-    @Builder
-    public ChatMessage(String from, String message) {
-        this.from = from;
-        this.message = message;
-    }
+    private String publickKey;
 
 }
