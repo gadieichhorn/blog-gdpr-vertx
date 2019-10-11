@@ -55,21 +55,37 @@ public class WebServerVerticleTest extends AbstractMongoTest {
     void postUserAndGetIt(VertxTestContext testContext) {
         client.post("/api/users")
                 .putHeader("content-type", "application/json")
-                .sendJsonObject(JsonObject.mapFrom(UserDto.builder().id("1").name(faker.name().username()).build()), post -> {
-                    if (post.succeeded()) {
-                        log.info("Post: {}", post.result().bodyAsString());
-                        Assertions.assertEquals(201, post.result().statusCode());
-                        client.get(8080, "localhost", "/api/users/" + post.result().bodyAsString())
-                                .as(BodyCodec.jsonObject())
-                                .send(testContext.succeeding(response -> testContext.verify(() -> {
-                                    Assertions.assertTrue(response.body().size() > 0);
-                                    testContext.completeNow();
-                                })));
-                    } else {
-                        log.error("Post failed", post.cause());
-                        testContext.failNow(post.cause());
-                    }
-                });
+                .sendJsonObject(JsonObject.mapFrom(UserDto.builder().id("1").name(faker.name().username()).build()),
+                        testContext.succeeding(post -> testContext.verify(() -> {
+                            log.info("Post: {}", post.bodyAsString());
+                            Assertions.assertEquals(201, post.statusCode());
+                            client.get(8080, "localhost", "/api/users/" + post.bodyAsString())
+                                    .as(BodyCodec.jsonObject())
+                                    .send(testContext.succeeding(response -> testContext.verify(() -> {
+                                        Assertions.assertTrue(response.body().size() > 0);
+                                        testContext.completeNow();
+                                    })));
+                        })));
+    }
+
+    //    @RepeatedTest(3)
+    void postUserAndDeleteIt(VertxTestContext testContext) {
+        client.post("/api/users")
+                .putHeader("content-type", "application/json")
+                .sendJsonObject(JsonObject.mapFrom(UserDto.builder().name(faker.name().username()).build()),
+                        testContext.succeeding(post -> testContext.verify(() -> {
+                            log.info("Post: {}", post.bodyAsString());
+                            Assertions.assertEquals(201, post.statusCode());
+                            client.delete(8080, "localhost", "/api/users/" + post.bodyAsString())
+//                                    .putHeader("content-type", "application/json")
+                                    .as(BodyCodec.string())
+                                    .send(testContext.succeeding(delete -> testContext.verify(() -> {
+                                        Assertions.assertEquals(204, post.statusCode());
+                                        log.info("Delete: {}", delete.body());
+                                        Assertions.assertTrue(delete.body().equals("0"));
+                                        testContext.completeNow();
+                                    })));
+                        })));
     }
 
     @RepeatedTest(3)

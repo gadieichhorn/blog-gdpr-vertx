@@ -4,7 +4,6 @@ import com.rds.gdpr.patterns.dto.UserDto;
 import com.rds.gdpr.patterns.model.User;
 import com.rds.gdpr.patterns.repository.UsersRepository;
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.Json;
@@ -25,20 +24,13 @@ public class UsersServiceImpl implements UsersService {
     @Override
     public void getAllUsers(OperationRequest context, Handler<AsyncResult<OperationResponse>> resultHandler) {
         log.info("Context: {}", context.toJson());
-        usersRepository.findAll(all -> {
-            if (all.succeeded()) {
-                resultHandler.handle(Future.succeededFuture(
-                        OperationResponse.completedWithJson(Json.encodeToBuffer(all.result().stream()
-                                .peek(entries -> log.info("User: {}", entries.encodePrettily()))
-                                .map(entries -> entries.mapTo(User.class))
-                                .collect(Collectors.toList())
-                        ))
-                ));
-            } else {
-                log.error("Failed to get all Document(s) (User)", all.cause());
-                resultHandler.handle(Future.failedFuture(all.cause()));
-            }
-        });
+        usersRepository.findAll(find ->
+                resultHandler.handle(find.map(all -> OperationResponse.completedWithJson(
+                        Json.encodeToBuffer(all
+                                .stream()
+                                .peek(entries -> log.info("User: {}", entries))
+                                .map(entries -> UserDto.of(entries))
+                                .collect(Collectors.toList()))))));
     }
 
     @Override
@@ -65,20 +57,11 @@ public class UsersServiceImpl implements UsersService {
     }
 
     @Override
-    public void updateUser(String id, JsonObject body, OperationRequest context, Handler<AsyncResult<OperationResponse>> resultHandler) {
+    public void deleteUser(String id, OperationRequest context, Handler<AsyncResult<OperationResponse>> handler) {
         log.info("Context: {}", context.toJson());
-        log.info("Context: {} : {}", id, body);
-        resultHandler.handle(Future.succeededFuture(
-                OperationResponse.completedWithPlainText(Buffer.buffer("Hello User!"))
-        ));
-    }
-
-    @Override
-    public void deleteUser(String id, OperationRequest context, Handler<AsyncResult<OperationResponse>> resultHandler) {
-        log.info("Context: {}", context.toJson());
-        resultHandler.handle(Future.succeededFuture(
-                OperationResponse.completedWithPlainText(Buffer.buffer("Hello User!"))
-        ));
+        usersRepository.delete(id, delete ->
+                handler.handle(delete.map(count -> OperationResponse.completedWithPlainText(Buffer.buffer(Long.toString(delete.result()))).setStatusCode(204))
+                        .otherwise(throwable -> OperationResponse.completedWithPlainText(Buffer.buffer(throwable.getMessage())).setStatusCode(500))));
     }
 
 }

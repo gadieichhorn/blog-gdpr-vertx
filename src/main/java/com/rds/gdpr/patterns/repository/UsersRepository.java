@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -23,8 +24,12 @@ public class UsersRepository {
                 handler.handle(find.map(json -> Optional.ofNullable(json).map(model -> model.mapTo(User.class)))));
     }
 
-    public void findAll(Handler<AsyncResult<List<JsonObject>>> resultHandler) {
-        client.find(User.COLLECTION, new JsonObject(), resultHandler);
+    public void findAll(Handler<AsyncResult<List<User>>> handler) {
+        client.find(User.COLLECTION, new JsonObject(), all ->
+                handler.handle(all
+                        .map(jsonObjects -> jsonObjects.stream()
+                                .map(entries -> entries.mapTo(User.class))
+                                .collect(Collectors.toList()))));
     }
 
     public void save(User user, Handler<AsyncResult<String>> handler) {

@@ -1,5 +1,6 @@
 package com.rds.gdpr.patterns.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.rds.gdpr.patterns.model.User;
 import lombok.*;
 
@@ -8,6 +9,7 @@ import lombok.*;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserDto {
 
     private String id;

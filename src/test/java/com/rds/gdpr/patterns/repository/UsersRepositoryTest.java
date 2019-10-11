@@ -3,7 +3,6 @@ package com.rds.gdpr.patterns.repository;
 import com.github.javafaker.Faker;
 import com.rds.gdpr.patterns.AbstractMongoTest;
 import com.rds.gdpr.patterns.model.User;
-import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
@@ -24,7 +23,7 @@ class UsersRepositoryTest extends AbstractMongoTest {
     }
 
     @RepeatedTest(3)
-    public void canGetAllUsers(Vertx vertx, VertxTestContext testContext) {
+    public void canGetAllUsers(VertxTestContext testContext) {
         usersRepository.findAll(testContext.succeeding(all -> testContext.verify(() -> {
             log.info("All: {}", all);
             Assertions.assertNotNull(all);

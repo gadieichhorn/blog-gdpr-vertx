@@ -81,40 +81,11 @@
           }
         }
       },
-      "put": {
-        "operationId": "updateUser",
-        "x-vertx-event-bus": "users.proxy",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/User"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Ok",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/User"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Something wrong happened"
-          }
-        }
-      },
       "delete": {
         "operationId": "deleteUser",
         "x-vertx-event-bus": "users.proxy",
         "responses": {
-          "200": {
+          "204": {
             "description": "Ok"
           },
           "500": {
