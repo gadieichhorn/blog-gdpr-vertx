@@ -51,10 +51,10 @@
         }
       }
     },
-    "/api/users/{userId}": {
+    "/api/users/{id}": {
       "parameters": [
         {
-          "name": "userId",
+          "name": "id",
           "in": "path",
           "required": true,
           "schema": {

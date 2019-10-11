@@ -10,6 +10,8 @@ import io.vertx.ext.web.api.generator.WebApiServiceGen;
 @WebApiServiceGen
 public interface UsersService {
 
+    public static final String ADDRESS = "users.proxy";
+
     void getAllUsers(OperationRequest context, Handler<AsyncResult<OperationResponse>> resultHandler);
 
     void createUser(JsonObject body, OperationRequest context, Handler<AsyncResult<OperationResponse>> resultHandler);

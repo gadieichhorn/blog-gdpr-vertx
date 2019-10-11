@@ -43,11 +43,14 @@ public class UsersServiceImpl implements UsersService {
 
     @Override
     public void createUser(JsonObject body, OperationRequest context, Handler<AsyncResult<OperationResponse>> resultHandler) {
-        log.info("Context: {}", body.encodePrettily());
+        log.info("Context: {}", context.toJson());
+        log.info("Body: {}", body.encodePrettily());
         client.insert("users", User.of(body.mapTo(UserDto.class)), insert -> {
             if (insert.succeeded()) {
                 log.info("Inserted Document (User) with id {}", insert.result());
-                resultHandler.handle(Future.succeededFuture(OperationResponse.completedWithPlainText(Buffer.buffer(insert.result()))));
+                resultHandler.handle(Future.succeededFuture(OperationResponse
+                        .completedWithPlainText(Buffer.buffer(insert.result()))
+                        .setStatusCode(201)));
             } else {
                 log.error("Failed to insert a Document (User)", insert.cause());
                 resultHandler.handle(Future.failedFuture(insert.cause()));
@@ -58,16 +61,19 @@ public class UsersServiceImpl implements UsersService {
     @Override
     public void getUser(String id, OperationRequest context, Handler<AsyncResult<OperationResponse>> resultHandler) {
         log.info("Context: {}", context.toJson());
-        log.info("Context: {}", id);
-        client.findOne("users", new JsonObject(), null, findOne -> {
+        log.info("Id: {}", id);
+        client.findOne("users", new JsonObject().put("_id", id), new JsonObject(), findOne -> {
             if (findOne.succeeded()) {
                 if (findOne.result() == null) {
                     resultHandler.handle(Future.succeededFuture(
                             OperationResponse.completedWithPlainText(Buffer.buffer("Not found"))
                                     .setStatusCode(404)));
                 } else {
+                    log.info("User: {}", findOne.result().encodePrettily());
+                    UserDto dto = UserDto.of(findOne.result().mapTo(User.class));
+                    log.info("UserDto: {}", dto);
                     resultHandler.handle(Future.succeededFuture(
-                            OperationResponse.completedWithJson(Json.encodeToBuffer(findOne.result().mapTo(User.class)))));
+                            OperationResponse.completedWithJson(Json.encodeToBuffer(dto))));
                 }
             } else {
                 log.error("Failed to get all Document(s) (User)", findOne.cause());

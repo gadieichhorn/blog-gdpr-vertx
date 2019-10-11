@@ -1,6 +1,5 @@
-package com.rds.gdpr.patterns;
+package com.rds.gdpr.patterns.vertx;
 
-import com.rds.gdpr.patterns.vertx.DecryptionVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;

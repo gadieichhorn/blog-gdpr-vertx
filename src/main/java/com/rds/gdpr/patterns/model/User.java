@@ -22,6 +22,8 @@ import java.security.NoSuchAlgorithmException;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class User {
 
+    public static final String COLLECTION = "users";
+
     private static KeyPairGenerator keyGen;
 
     static {
@@ -36,6 +38,7 @@ public class User {
     @JsonProperty("_id")
     private String id;
 
+    @NonNull
     @JsonProperty("name")
     private String name;
 
