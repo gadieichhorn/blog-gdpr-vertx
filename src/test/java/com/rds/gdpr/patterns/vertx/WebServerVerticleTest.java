@@ -20,6 +20,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
+import java.util.UUID;
+
 @Slf4j
 public class WebServerVerticleTest extends AbstractMongoTest {
 
@@ -59,7 +61,7 @@ public class WebServerVerticleTest extends AbstractMongoTest {
                         testContext.succeeding(post -> testContext.verify(() -> {
                             log.info("Post: {}", post.bodyAsString());
                             Assertions.assertEquals(201, post.statusCode());
-                            client.get(8080, "localhost", "/api/users/" + post.bodyAsString())
+                            client.get("/api/users/" + post.bodyAsString())
                                     .as(BodyCodec.jsonObject())
                                     .send(testContext.succeeding(response -> testContext.verify(() -> {
                                         Assertions.assertTrue(response.body().size() > 0);
@@ -68,7 +70,7 @@ public class WebServerVerticleTest extends AbstractMongoTest {
                         })));
     }
 
-    //    @RepeatedTest(3)
+    @RepeatedTest(3)
     void postUserAndDeleteIt(VertxTestContext testContext) {
         client.post("/api/users")
                 .putHeader("content-type", "application/json")
@@ -77,12 +79,8 @@ public class WebServerVerticleTest extends AbstractMongoTest {
                             log.info("Post: {}", post.bodyAsString());
                             Assertions.assertEquals(201, post.statusCode());
                             client.delete(8080, "localhost", "/api/users/" + post.bodyAsString())
-//                                    .putHeader("content-type", "application/json")
-                                    .as(BodyCodec.string())
                                     .send(testContext.succeeding(delete -> testContext.verify(() -> {
-                                        Assertions.assertEquals(204, post.statusCode());
-                                        log.info("Delete: {}", delete.body());
-                                        Assertions.assertTrue(delete.body().equals("0"));
+                                        Assertions.assertEquals(204, delete.statusCode());
                                         testContext.completeNow();
                                     })));
                         })));
@@ -104,6 +102,15 @@ public class WebServerVerticleTest extends AbstractMongoTest {
                 .as(BodyCodec.jsonArray())
                 .send(testContext.succeeding(response -> testContext.verify(() -> {
                     Assertions.assertTrue(response.body().size() > 0);
+                    testContext.completeNow();
+                })));
+    }
+
+    @RepeatedTest(3)
+    void deleteWrongUser(VertxTestContext testContext) {
+        client.delete("/api/users/" + UUID.randomUUID().toString())
+                .send(testContext.succeeding(delete -> testContext.verify(() -> {
+                    Assertions.assertEquals(404, delete.statusCode());
                     testContext.completeNow();
                 })));
     }

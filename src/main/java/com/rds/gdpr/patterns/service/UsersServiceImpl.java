@@ -60,8 +60,11 @@ public class UsersServiceImpl implements UsersService {
     public void deleteUser(String id, OperationRequest context, Handler<AsyncResult<OperationResponse>> handler) {
         log.info("Context: {}", context.toJson());
         usersRepository.delete(id, delete ->
-                handler.handle(delete.map(count -> OperationResponse.completedWithPlainText(Buffer.buffer(Long.toString(delete.result()))).setStatusCode(204))
-                        .otherwise(throwable -> OperationResponse.completedWithPlainText(Buffer.buffer(throwable.getMessage())).setStatusCode(500))));
+                handler.handle(delete
+                        .map(count -> count > 0 ?
+                                new OperationResponse().setStatusCode(204).setStatusMessage("OK") :
+                                new OperationResponse().setStatusCode(404).setStatusMessage("Not found"))
+                        .otherwise(throwable -> new OperationResponse().setStatusCode(404).setStatusMessage("Not found"))));
     }
 
 }
