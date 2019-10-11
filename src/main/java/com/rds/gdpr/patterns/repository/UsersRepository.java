@@ -32,4 +32,10 @@ public class UsersRepository {
         client.insert(User.COLLECTION, JsonObject.mapFrom(user), handler);
     }
 
+    public void delete(String id, Handler<AsyncResult<Long>> handler) {
+        log.info("Id: {}", id);
+        client.removeDocument(User.COLLECTION, new JsonObject().put("_id", id), event ->
+                handler.handle(event.map(delete -> delete.getRemovedCount())));
+    }
+
 }

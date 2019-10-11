@@ -42,6 +42,23 @@ class UsersRepositoryTest extends AbstractMongoTest {
     }
 
     @RepeatedTest(3)
+    public void canDeleteUser(VertxTestContext testContext) {
+        usersRepository.save(User.builder().name(faker.name().username()).build(), testContext.succeeding(save ->
+                usersRepository.delete(save, testContext.succeeding(delete -> testContext.verify(() -> {
+                    Assertions.assertEquals(1, delete);
+                    testContext.completeNow();
+                })))));
+    }
+
+    @RepeatedTest(3)
+    public void failedDeleteUser(VertxTestContext testContext) {
+        usersRepository.delete(UUID.randomUUID().toString(), testContext.succeeding(delete -> testContext.verify(() -> {
+            Assertions.assertEquals(0, delete);
+            testContext.completeNow();
+        })));
+    }
+
+    @RepeatedTest(3)
     public void failedSaveUserWithMissingName(VertxTestContext testContext) {
         Assertions.assertThrows(IllegalArgumentException.class, () ->
                 usersRepository.save(User.builder().build(), testContext.succeeding(save -> testContext.verify(() -> {

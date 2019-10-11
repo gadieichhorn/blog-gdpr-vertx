@@ -29,7 +29,7 @@ public class WebServerVerticleTest extends AbstractMongoTest {
     private ServiceBinder serviceBinder;
     private MessageConsumer<JsonObject> consumer;
 
-    private WebClient client;// = WebClient.create(vertx);
+    private WebClient client;
 
     @BeforeEach
     void beforeEach(Vertx vertx, VertxTestContext testContext) {
@@ -47,11 +47,11 @@ public class WebServerVerticleTest extends AbstractMongoTest {
     }
 
     @Test
-    void deployed(Vertx vertx, VertxTestContext testContext) throws Throwable {
+    void deployed(VertxTestContext testContext) throws Throwable {
         testContext.completeNow();
     }
 
-    @RepeatedTest(1)
+    @RepeatedTest(3)
     void postUserAndGetIt(VertxTestContext testContext) {
         client.post("/api/users")
                 .putHeader("content-type", "application/json")
@@ -70,11 +70,10 @@ public class WebServerVerticleTest extends AbstractMongoTest {
                         testContext.failNow(post.cause());
                     }
                 });
-
     }
 
-    @RepeatedTest(1)
-    void getOneUser(Vertx vertx, VertxTestContext testContext) {
+    @RepeatedTest(3)
+    void getOneUser(VertxTestContext testContext) {
         client.get("/api/users/123123123")
                 .as(BodyCodec.string())
                 .send(testContext.succeeding(response -> testContext.verify(() -> {
@@ -83,8 +82,8 @@ public class WebServerVerticleTest extends AbstractMongoTest {
                 })));
     }
 
-    @RepeatedTest(1)
-    void getAllUsers(Vertx vertx, VertxTestContext testContext) {
+    @RepeatedTest(3)
+    void getAllUsers(VertxTestContext testContext) {
         client.get("/api/users")
                 .as(BodyCodec.jsonArray())
                 .send(testContext.succeeding(response -> testContext.verify(() -> {
