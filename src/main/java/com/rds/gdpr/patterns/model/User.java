@@ -3,8 +3,6 @@ package com.rds.gdpr.patterns.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.rds.gdpr.patterns.dto.UserDto;
-import io.vertx.core.json.JsonObject;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
@@ -14,7 +12,6 @@ import java.security.NoSuchAlgorithmException;
 
 @Data
 @Slf4j
-@Builder
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
@@ -48,12 +45,13 @@ public class User {
     @JsonProperty("publicKey")
     private Binary publicKey;
 
-    public static JsonObject of(UserDto dto) {
+    @Builder
+    public User(String id, @NonNull String name) {
+        this.id = id;
+        this.name = name;
         KeyPair pair = keyGen.generateKeyPair();
-        return new JsonObject()
-                .put("name", dto.getName())
-                .put("publicKey", new JsonObject().put("$binary", pair.getPublic().getEncoded()))
-                .put("privateKey", new JsonObject().put("$binary", pair.getPrivate().getEncoded()));
+        this.publicKey = Binary.builder().data(pair.getPublic().getEncoded()).build();
+        this.privateKey = Binary.builder().data(pair.getPrivate().getEncoded()).build();
     }
 
 }

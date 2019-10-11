@@ -1,7 +1,7 @@
 package com.rds.gdpr.patterns.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 @Data
 @Slf4j
 @ToString
-@AllArgsConstructor
 @NoArgsConstructor
 public class Binary {
 
@@ -20,4 +19,9 @@ public class Binary {
     @JsonProperty("$type")
     private int type;
 
+    @Builder
+    public Binary(byte[] data) {
+        this.data = data;
+        this.type = 0;
+    }
 }

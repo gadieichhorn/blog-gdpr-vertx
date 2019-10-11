@@ -40,7 +40,7 @@ public class UsersRepository {
     }
 
     public void save(User user, Handler<AsyncResult<String>> handler) {
-        log.debug("User: {}", user);
+        log.info("User: {}", user);
         client.insert(User.COLLECTION, JsonObject.mapFrom(user), handler);
     }
 

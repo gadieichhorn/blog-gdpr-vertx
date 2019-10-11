@@ -1,5 +1,6 @@
 package com.rds.gdpr.patterns.vertx;
 
+import com.rds.gdpr.patterns.repository.UsersRepository;
 import com.rds.gdpr.patterns.service.UsersService;
 import com.rds.gdpr.patterns.service.UsersServiceImpl;
 import io.vertx.core.AbstractVerticle;
@@ -16,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 public class UsersVerticle extends AbstractVerticle {
 
     private MongoClient mongoClient;
+    private UsersRepository usersRepository;
     private ServiceBinder serviceBinder;
     private MessageConsumer<JsonObject> consumer;
 
@@ -28,10 +30,11 @@ public class UsersVerticle extends AbstractVerticle {
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
         mongoClient = MongoClient.createShared(vertx, config());
+        usersRepository = new UsersRepository(mongoClient);
         serviceBinder = new ServiceBinder(this.vertx);
         consumer = serviceBinder
                 .setAddress(UsersService.ADDRESS)
-                .register(UsersService.class, new UsersServiceImpl(mongoClient));
+                .register(UsersService.class, new UsersServiceImpl(usersRepository));
         startPromise.complete();
     }
 

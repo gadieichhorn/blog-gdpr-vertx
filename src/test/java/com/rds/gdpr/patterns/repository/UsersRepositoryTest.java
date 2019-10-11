@@ -56,7 +56,7 @@ class UsersRepositoryTest extends AbstractMongoTest {
             Assertions.assertFalse(save.isEmpty());
             usersRepository.findById(save, testContext.succeeding(user -> testContext.verify(() -> {
                 user.ifPresent(model -> {
-                    log.info("User: {}", user);
+                    log.info("User: {}", model);
                     Assertions.assertEquals(save, model.getId());
                     testContext.completeNow();
                 });

@@ -2,13 +2,13 @@ package com.rds.gdpr.patterns.service;
 
 import com.rds.gdpr.patterns.dto.UserDto;
 import com.rds.gdpr.patterns.model.User;
+import com.rds.gdpr.patterns.repository.UsersRepository;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.web.api.OperationRequest;
 import io.vertx.ext.web.api.OperationResponse;
 import lombok.RequiredArgsConstructor;
@@ -20,23 +20,23 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UsersServiceImpl implements UsersService {
 
-    private final MongoClient client;
+    private final UsersRepository usersRepository;
 
     @Override
     public void getAllUsers(OperationRequest context, Handler<AsyncResult<OperationResponse>> resultHandler) {
         log.info("Context: {}", context.toJson());
-        client.find("users", new JsonObject(), find -> {
-            if (find.succeeded()) {
+        usersRepository.findAll(all -> {
+            if (all.succeeded()) {
                 resultHandler.handle(Future.succeededFuture(
-                        OperationResponse.completedWithJson(Json.encodeToBuffer(find.result().stream()
+                        OperationResponse.completedWithJson(Json.encodeToBuffer(all.result().stream()
                                 .peek(entries -> log.info("User: {}", entries.encodePrettily()))
                                 .map(entries -> entries.mapTo(User.class))
                                 .collect(Collectors.toList())
                         ))
                 ));
             } else {
-                log.error("Failed to get all Document(s) (User)", find.cause());
-                resultHandler.handle(Future.failedFuture(find.cause()));
+                log.error("Failed to get all Document(s) (User)", all.cause());
+                resultHandler.handle(Future.failedFuture(all.cause()));
             }
         });
     }
@@ -45,15 +45,15 @@ public class UsersServiceImpl implements UsersService {
     public void createUser(JsonObject body, OperationRequest context, Handler<AsyncResult<OperationResponse>> resultHandler) {
         log.info("Context: {}", context.toJson());
         log.info("Body: {}", body.encodePrettily());
-        client.insert("users", User.of(body.mapTo(UserDto.class)), insert -> {
-            if (insert.succeeded()) {
-                log.info("Inserted Document (User) with id {}", insert.result());
+        usersRepository.save(User.builder().name(body.mapTo(UserDto.class).getName()).build(), save -> {
+            if (save.succeeded()) {
+                log.info("Save Document (User) with id {}", save.result());
                 resultHandler.handle(Future.succeededFuture(OperationResponse
-                        .completedWithPlainText(Buffer.buffer(insert.result()))
+                        .completedWithPlainText(Buffer.buffer(save.result()))
                         .setStatusCode(201)));
             } else {
-                log.error("Failed to insert a Document (User)", insert.cause());
-                resultHandler.handle(Future.failedFuture(insert.cause()));
+                log.error("Failed to save a Document (User)", save.cause());
+                resultHandler.handle(Future.failedFuture(save.cause()));
             }
         });
     }
@@ -62,24 +62,12 @@ public class UsersServiceImpl implements UsersService {
     public void getUser(String id, OperationRequest context, Handler<AsyncResult<OperationResponse>> resultHandler) {
         log.info("Context: {}", context.toJson());
         log.info("Id: {}", id);
-        client.findOne("users", new JsonObject().put("_id", id), new JsonObject(), findOne -> {
-            if (findOne.succeeded()) {
-                if (findOne.result() == null) {
-                    resultHandler.handle(Future.succeededFuture(
-                            OperationResponse.completedWithPlainText(Buffer.buffer("Not found"))
-                                    .setStatusCode(404)));
-                } else {
-                    log.info("User: {}", findOne.result().encodePrettily());
-                    UserDto dto = UserDto.of(findOne.result().mapTo(User.class));
-                    log.info("UserDto: {}", dto);
-                    resultHandler.handle(Future.succeededFuture(
-                            OperationResponse.completedWithJson(Json.encodeToBuffer(dto))));
-                }
-            } else {
-                log.error("Failed to get all Document(s) (User)", findOne.cause());
-                resultHandler.handle(Future.failedFuture(findOne.cause()));
-            }
-        });
+        usersRepository
+                .findById(id, find -> find
+                        .map(user -> Future.succeededFuture(user
+                                .map(model -> OperationResponse.completedWithJson(Json.encodeToBuffer(UserDto.of(model))))
+                                .orElse(OperationResponse.completedWithPlainText(Buffer.buffer("Not Found")).setStatusCode(404))))
+                        .otherwise(throwable -> Future.failedFuture(throwable)));
     }
 
     @Override
