@@ -42,32 +42,26 @@ public class UsersServiceImpl implements UsersService {
     }
 
     @Override
-    public void createUser(JsonObject body, OperationRequest context, Handler<AsyncResult<OperationResponse>> resultHandler) {
+    public void createUser(JsonObject body, OperationRequest context, Handler<AsyncResult<OperationResponse>> handler) {
         log.info("Context: {}", context.toJson());
         log.info("Body: {}", body.encodePrettily());
-        usersRepository.save(User.builder().name(body.mapTo(UserDto.class).getName()).build(), save -> {
-            if (save.succeeded()) {
-                log.info("Save Document (User) with id {}", save.result());
-                resultHandler.handle(Future.succeededFuture(OperationResponse
-                        .completedWithPlainText(Buffer.buffer(save.result()))
-                        .setStatusCode(201)));
-            } else {
-                log.error("Failed to save a Document (User)", save.cause());
-                resultHandler.handle(Future.failedFuture(save.cause()));
-            }
-        });
+        usersRepository.save(User.builder().name(body.mapTo(UserDto.class).getName()).build(), save ->
+                handler.handle(save.map(id -> OperationResponse.completedWithPlainText(Buffer.buffer(id)).setStatusCode(201))
+                        .otherwise(throwable -> OperationResponse.completedWithPlainText(Buffer.buffer(throwable.getMessage()))
+                                .setStatusCode(500))));
     }
 
     @Override
-    public void getUser(String id, OperationRequest context, Handler<AsyncResult<OperationResponse>> resultHandler) {
+    public void getUser(String id, OperationRequest context, Handler<AsyncResult<OperationResponse>> handler) {
         log.info("Context: {}", context.toJson());
         log.info("Id: {}", id);
-        usersRepository
-                .findById(id, find -> find
-                        .map(user -> Future.succeededFuture(user
+        usersRepository.findById(id, find ->
+                handler.handle(find
+                        .map(user -> user
                                 .map(model -> OperationResponse.completedWithJson(Json.encodeToBuffer(UserDto.of(model))))
-                                .orElse(OperationResponse.completedWithPlainText(Buffer.buffer("Not Found")).setStatusCode(404))))
-                        .otherwise(throwable -> Future.failedFuture(throwable)));
+                                .orElse(OperationResponse.completedWithPlainText(Buffer.buffer("Not Found")).setStatusCode(404)))
+                        .otherwise(throwable -> OperationResponse.completedWithPlainText(Buffer.buffer(throwable.getMessage()))
+                                .setStatusCode(500))));
     }
 
     @Override

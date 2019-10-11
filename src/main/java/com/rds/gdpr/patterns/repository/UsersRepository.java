@@ -2,7 +2,6 @@ package com.rds.gdpr.patterns.repository;
 
 import com.rds.gdpr.patterns.model.User;
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
@@ -20,19 +19,8 @@ public class UsersRepository {
 
     public void findById(String id, Handler<AsyncResult<Optional<User>>> handler) {
         log.debug("ID: {}", id);
-        client.findOne(User.COLLECTION, new JsonObject().put("_id", id), null, find -> {
-            if (find.succeeded()) {
-                if (find.result() == null) {
-                    log.warn("No results found for ID: {}", id);
-                    handler.handle(Future.succeededFuture(Optional.empty()));
-                } else {
-                    handler.handle(Future.succeededFuture(Optional.ofNullable(find.result().mapTo(User.class))));
-                }
-            } else {
-                log.error("Failed to load user", find.cause());
-                handler.handle(Future.failedFuture(find.cause()));
-            }
-        });
+        client.findOne(User.COLLECTION, new JsonObject().put("_id", id), null, find ->
+                handler.handle(find.map(json -> Optional.ofNullable(json).map(model -> model.mapTo(User.class)))));
     }
 
     public void findAll(Handler<AsyncResult<List<JsonObject>>> resultHandler) {

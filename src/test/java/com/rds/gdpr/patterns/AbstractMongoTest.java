@@ -23,7 +23,7 @@ import java.io.IOException;
 
 @Slf4j
 @ExtendWith(VertxExtension.class)
-public class AbstractMongoTest {
+public abstract class AbstractMongoTest {
 
     protected static JsonObject mongoConfig;
     protected MongoClient mongoClient;
