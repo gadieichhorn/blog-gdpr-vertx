@@ -3,18 +3,20 @@ package com.rds.gdpr.patterns.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.netty.util.CharsetUtil;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
+import javax.crypto.Cipher;
+import java.security.*;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 
 @Data
 @Slf4j
 @ToString
 @AllArgsConstructor
-@NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class User {
@@ -23,7 +25,14 @@ public class User {
 
     private static KeyPairGenerator keyGen;
 
+    private static KeyFactory kf;
+
     static {
+        try {
+            kf = KeyFactory.getInstance("RSA");
+        } catch (NoSuchAlgorithmException e) {
+            log.error("NoSuchAlgorithmException", e);
+        }
         try {
             keyGen = KeyPairGenerator.getInstance("RSA");
             keyGen.initialize(1024);
@@ -52,6 +61,28 @@ public class User {
         KeyPair pair = keyGen.generateKeyPair();
         this.publicKey = Binary.builder().data(pair.getPublic().getEncoded()).build();
         this.privateKey = Binary.builder().data(pair.getPrivate().getEncoded()).build();
+    }
+
+    public String encrypt(String message) throws Exception {
+        return encrypt(message, kf.generatePublic(new X509EncodedKeySpec(this.publicKey.getData())));
+    }
+
+    public String decrypt(String message) throws Exception {
+        return decrypt(message, kf.generatePrivate(new PKCS8EncodedKeySpec(this.privateKey.getData())));
+    }
+
+    public static String encrypt(String plainText, PublicKey publicKey) throws Exception {
+        Cipher encryptCipher = Cipher.getInstance("RSA");
+        encryptCipher.init(Cipher.ENCRYPT_MODE, publicKey);
+        byte[] cipherText = encryptCipher.doFinal(plainText.getBytes(CharsetUtil.UTF_8));
+        return Base64.getEncoder().encodeToString(cipherText);
+    }
+
+    public static String decrypt(String cipherText, PrivateKey privateKey) throws Exception {
+        byte[] bytes = Base64.getDecoder().decode(cipherText);
+        Cipher decriptCipher = Cipher.getInstance("RSA");
+        decriptCipher.init(Cipher.DECRYPT_MODE, privateKey);
+        return new String(decriptCipher.doFinal(bytes), CharsetUtil.UTF_8);
     }
 
 }

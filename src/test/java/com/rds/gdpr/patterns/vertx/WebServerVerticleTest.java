@@ -78,7 +78,7 @@ public class WebServerVerticleTest extends AbstractMongoTest {
                         testContext.succeeding(post -> testContext.verify(() -> {
                             log.info("Post: {}", post.bodyAsString());
                             Assertions.assertEquals(201, post.statusCode());
-                            client.delete(8080, "localhost", "/api/users/" + post.bodyAsString())
+                            client.delete("/api/users/" + post.bodyAsString())
                                     .send(testContext.succeeding(delete -> testContext.verify(() -> {
                                         Assertions.assertEquals(204, delete.statusCode());
                                         testContext.completeNow();

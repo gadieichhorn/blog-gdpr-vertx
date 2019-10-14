@@ -24,4 +24,5 @@ public class Binary {
         this.data = data;
         this.type = 0;
     }
+
 }
