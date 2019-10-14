@@ -16,7 +16,7 @@ import java.util.Base64;
 @Data
 @Slf4j
 @ToString
-@AllArgsConstructor
+@NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class User {
@@ -49,26 +49,26 @@ public class User {
     private String name;
 
     @JsonProperty("privateKey")
-    private Binary privateKey;
+    private String privateKey;
 
     @JsonProperty("publicKey")
-    private Binary publicKey;
+    private String publicKey;
 
     @Builder
     public User(String id, @NonNull String name) {
         this.id = id;
         this.name = name;
         KeyPair pair = keyGen.generateKeyPair();
-        this.publicKey = Binary.builder().data(pair.getPublic().getEncoded()).build();
-        this.privateKey = Binary.builder().data(pair.getPrivate().getEncoded()).build();
+        this.publicKey = Base64.getEncoder().encodeToString(pair.getPublic().getEncoded());
+        this.privateKey = Base64.getEncoder().encodeToString(pair.getPrivate().getEncoded());
     }
 
     public String encrypt(String message) throws Exception {
-        return encrypt(message, kf.generatePublic(new X509EncodedKeySpec(this.publicKey.getData())));
+        return encrypt(message, kf.generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(publicKey))));
     }
 
     public String decrypt(String message) throws Exception {
-        return decrypt(message, kf.generatePrivate(new PKCS8EncodedKeySpec(this.privateKey.getData())));
+        return decrypt(message, kf.generatePrivate(new PKCS8EncodedKeySpec(Base64.getDecoder().decode(this.privateKey))));
     }
 
     public static String encrypt(String plainText, PublicKey publicKey) throws Exception {
