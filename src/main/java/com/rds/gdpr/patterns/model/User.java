@@ -34,7 +34,7 @@ public class User {
     public User(String id, @NonNull String name) {
         this.id = id;
         this.name = name;
-        RSACipherHelper.pair(pair -> {
+        RSACipherHelper.getInstance().pair(pair -> {
             this.publicKey = Base64.getEncoder().encodeToString(pair.getPublic().getEncoded());
             this.privateKey = Base64.getEncoder().encodeToString(pair.getPrivate().getEncoded());
         });

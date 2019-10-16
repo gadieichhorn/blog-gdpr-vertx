@@ -16,11 +16,12 @@ class UserTest {
         User user = User.builder().name(faker.name().username()).build();
         String message = faker.random().hex(117);
         log.debug("Message: [{}] {}", message.getBytes().length, message);
-        RSACipherHelper.loadPublicKey(user.getPublicKey(), publicKey ->
-                RSACipherHelper.encrypt(message, publicKey, encrypted -> {
+        RSACipherHelper rsa = RSACipherHelper.getInstance();
+        rsa.loadPublicKey(user.getPublicKey(), publicKey ->
+                rsa.encrypt(message, publicKey, encrypted -> {
                     log.info("Encrypted: {} {}", message, encrypted);
-                    RSACipherHelper.loadPrivateKey(user.getPrivateKey(), privateKey ->
-                            RSACipherHelper.decrypt(encrypted, privateKey, decrypted -> {
+                    rsa.loadPrivateKey(user.getPrivateKey(), privateKey ->
+                            rsa.decrypt(encrypted, privateKey, decrypted -> {
                                 log.info("Decrypted: {} ", decrypted);
                                 Assertions.assertEquals(decrypted, message);
                             }));
