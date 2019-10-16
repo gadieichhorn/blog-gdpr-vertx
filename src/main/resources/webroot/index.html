@@ -92,9 +92,12 @@
 	$('#submit').on('click', function(event) {
 		event.preventDefault(); // To prevent following the link (optional)
 		var message = $('#input').val();
+
 		if (message.length > 0) {
-<!--			console.log(message);-->
-			eb.publish("chat-service-inbound", message);
+			var myObj = {from: "John", message: message};
+			var myJSON = JSON.stringify(myObj);
+			console.log(myJSON);
+			eb.publish("chat-service-inbound", myObj);
 			$('#input').val("");
 		}
 	});

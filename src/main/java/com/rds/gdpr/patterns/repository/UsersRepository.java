@@ -16,16 +16,19 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UsersRepository {
 
+    private static final String COLLECTION = "users";
+
     private final MongoClient client;
 
     public void findById(String id, Handler<AsyncResult<Optional<User>>> handler) {
         log.debug("ID: {}", id);
-        client.findOne(User.COLLECTION, new JsonObject().put("_id", id), null, find ->
-                handler.handle(find.map(json -> Optional.ofNullable(json).map(model -> model.mapTo(User.class)))));
+        client.findOne(COLLECTION, new JsonObject().put("_id", id), null, find ->
+                handler.handle(find
+                        .map(json -> Optional.ofNullable(json).map(model -> model.mapTo(User.class)))));
     }
 
     public void findAll(Handler<AsyncResult<List<User>>> handler) {
-        client.find(User.COLLECTION, new JsonObject(), all ->
+        client.find(COLLECTION, new JsonObject(), all ->
                 handler.handle(all
                         .map(jsonObjects -> jsonObjects.stream()
                                 .map(entries -> entries.mapTo(User.class))
@@ -34,13 +37,14 @@ public class UsersRepository {
 
     public void save(User user, Handler<AsyncResult<String>> handler) {
         log.info("User: {}", user);
-        client.insert(User.COLLECTION, JsonObject.mapFrom(user), handler);
+        client.insert(COLLECTION, JsonObject.mapFrom(user), handler);
     }
 
     public void delete(String id, Handler<AsyncResult<Long>> handler) {
         log.info("Id: {}", id);
-        client.removeDocument(User.COLLECTION, new JsonObject().put("_id", id), event ->
-                handler.handle(event.map(delete -> delete.getRemovedCount())));
+        client.removeDocument(COLLECTION, new JsonObject().put("_id", id), event ->
+                handler.handle(event
+                        .map(delete -> delete.getRemovedCount())));
     }
 
 }

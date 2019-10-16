@@ -1,6 +1,7 @@
 package com.rds.gdpr.patterns.model;
 
 import com.github.javafaker.Faker;
+import com.rds.gdpr.patterns.cipher.RSACipherHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -15,11 +16,15 @@ class UserTest {
         User user = User.builder().name(faker.name().username()).build();
         String message = faker.random().hex(117);
         log.debug("Message: [{}] {}", message.getBytes().length, message);
-        String encrypted = user.encrypt(message);
-        log.info("Encrypted: {} {}", message, encrypted);
-        String results = user.decrypt(encrypted);
-        log.info("Decrypted: {} ", results);
-        Assertions.assertEquals(results, message);
+        RSACipherHelper.loadPublicKey(user.getPublicKey(), publicKey ->
+                RSACipherHelper.encrypt(message, publicKey, encrypted -> {
+                    log.info("Encrypted: {} {}", message, encrypted);
+                    RSACipherHelper.loadPrivateKey(user.getPrivateKey(), privateKey ->
+                            RSACipherHelper.decrypt(encrypted, privateKey, decrypted -> {
+                                log.info("Decrypted: {} ", decrypted);
+                                Assertions.assertEquals(decrypted, message);
+                            }));
+                }));
     }
 
 }

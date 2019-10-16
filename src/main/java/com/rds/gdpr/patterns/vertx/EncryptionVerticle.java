@@ -1,16 +1,17 @@
 package com.rds.gdpr.patterns.vertx;
 
+import com.rds.gdpr.patterns.dto.ChatMessageDto;
 import com.rds.gdpr.patterns.model.ChatMessage;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonObject;
 import io.vertx.kafka.client.producer.KafkaProducer;
 import io.vertx.kafka.client.producer.KafkaProducerRecord;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 @Slf4j
 public class EncryptionVerticle extends AbstractVerticle {
@@ -27,19 +28,17 @@ public class EncryptionVerticle extends AbstractVerticle {
 
         producer = KafkaProducer.create(vertx, config);
 
-        vertx.eventBus().consumer("chat-service-inbound").handler(message ->
-                producer.write(KafkaProducerRecord.create("chat-messages",
-                        Json.encode(ChatMessage.builder()
-                                .from(UUID.randomUUID().toString())
-                                .message(message.body().toString())
-                                .build())),
-                        published -> {
-                            if (published.succeeded()) {
-                                log.info("Published", published.result());
-                            } else {
-                                log.error("Published error", published.cause());
-                            }
-                        }));
+        vertx.eventBus().<JsonObject>localConsumer("chat-service-inbound")
+                .handler(message ->
+                        producer.write(KafkaProducerRecord.create("chat-messages",
+                                Json.encode(ChatMessage.of(message.body().mapTo(ChatMessageDto.class)))),
+                                published -> {
+                                    if (published.succeeded()) {
+                                        log.info("Published", published.result());
+                                    } else {
+                                        log.error("Published error", published.cause());
+                                    }
+                                }));
 
         startPromise.complete();
     }
