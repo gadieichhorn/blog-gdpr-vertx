@@ -1,5 +1,6 @@
 package com.rds.gdpr.patterns.vertx;
 
+import com.rds.gdpr.patterns.repository.UsersMongoRepository;
 import com.rds.gdpr.patterns.repository.UsersRepository;
 import com.rds.gdpr.patterns.service.UsersService;
 import com.rds.gdpr.patterns.service.UsersServiceImpl;
@@ -30,11 +31,11 @@ public class UsersVerticle extends AbstractVerticle {
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
         mongoClient = MongoClient.createShared(vertx, config());
-        usersRepository = new UsersRepository(mongoClient);
+        usersRepository = new UsersMongoRepository(mongoClient);
         serviceBinder = new ServiceBinder(this.vertx);
         consumer = serviceBinder
                 .setAddress(UsersService.ADDRESS)
-                .register(UsersService.class, new UsersServiceImpl(usersRepository));
+                .register(UsersService.class, new UsersServiceImpl(usersRepository, vertx.eventBus()));
         startPromise.complete();
     }
 

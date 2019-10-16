@@ -3,6 +3,7 @@ package com.rds.gdpr.patterns.vertx;
 import com.github.javafaker.Faker;
 import com.rds.gdpr.patterns.AbstractMongoTest;
 import com.rds.gdpr.patterns.dto.UserDto;
+import com.rds.gdpr.patterns.repository.UsersMongoRepository;
 import com.rds.gdpr.patterns.repository.UsersRepository;
 import com.rds.gdpr.patterns.service.UsersService;
 import com.rds.gdpr.patterns.service.UsersServiceImpl;
@@ -35,11 +36,11 @@ public class WebServerVerticleTest extends AbstractMongoTest {
 
     @BeforeEach
     void beforeEach(Vertx vertx, VertxTestContext testContext) {
-        usersRepository = new UsersRepository(mongoClient);
+        usersRepository = new UsersMongoRepository(mongoClient);
         serviceBinder = new ServiceBinder(vertx);
         consumer = serviceBinder
                 .setAddress(UsersService.ADDRESS)
-                .register(UsersService.class, new UsersServiceImpl(usersRepository));
+                .register(UsersService.class, new UsersServiceImpl(usersRepository, vertx.eventBus()));
 
         vertx.deployVerticle(new WebServerVerticle(), testContext.succeeding(id -> testContext.completeNow()));
 

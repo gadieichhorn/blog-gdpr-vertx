@@ -4,6 +4,7 @@ import com.github.javafaker.Faker;
 import com.rds.gdpr.patterns.dto.ChatMessageDto;
 import com.rds.gdpr.patterns.model.User;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -44,7 +45,8 @@ class ChatMessageCipherHelperTest {
 
         ChatMessageCipherHelper.getInstance().encrypt(user, dto, message -> {
             ChatMessageCipherHelper.getInstance().decrypt(user, message, chatMessageDto -> {
-                log.info("DTO: {}", chatMessageDto);
+                log.info("Back: {}", chatMessageDto);
+                Assertions.assertEquals(dto.getMessage(), chatMessageDto.getMessage());
             });
         });
 

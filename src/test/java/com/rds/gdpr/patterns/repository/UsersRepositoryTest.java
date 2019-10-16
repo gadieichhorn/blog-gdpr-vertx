@@ -19,7 +19,7 @@ class UsersRepositoryTest extends AbstractMongoTest {
 
     @BeforeEach
     public void beforeEach() {
-        usersRepository = new UsersRepository(mongoClient);
+        usersRepository = new UsersMongoRepository(mongoClient);
     }
 
     @RepeatedTest(3)

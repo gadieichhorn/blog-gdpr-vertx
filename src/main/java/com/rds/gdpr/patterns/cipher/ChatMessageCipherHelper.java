@@ -18,6 +18,7 @@ public class ChatMessageCipherHelper {
     private static final DESCipherHelper DES = DESCipherHelper.getInstance();
 
     public void encrypt(User user, ChatMessageDto dto, Consumer<ChatMessage> handler) {
+        log.info("User: {}, Message: {}", user, dto);
         DES.key(secretKey ->
                 DES.encrypt(dto.getMessage(), secretKey, message ->
                         RSA.loadPublicKey(user.getPublicKey(), publicKey ->
@@ -31,6 +32,7 @@ public class ChatMessageCipherHelper {
     }
 
     public void decrypt(User user, ChatMessage chatMessage, Consumer<ChatMessageDto> handler) {
+        log.info("User: {}, Message: {}", user, chatMessage);
         RSA.loadPrivateKey(user.getPrivateKey(), privateKey ->
                 RSA.decrypt(chatMessage.getKey(), privateKey, decryptedKey ->
                         DES.loadKey(decryptedKey, key ->
