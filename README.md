@@ -21,6 +21,26 @@ Place a test message and see the message that was saved in Kafak and the message
 
 Check the log to see the inner process of message flow through the system.
 
+## Cipher
+The encryption and decryption of messages is performed in two steps.
+
+The RSA key pair is generated per user and stored in the user profile in MongoDB
+
+### Step 1
+
+Messages encrypted using DES Symetric key. this is because the RSA encryption is limited by content size and can only do messages based on the key size. DES Symteric is not limited.
+The encrypted message is saved into the message body
+
+### Step 2
+
+The symmetric key (used in step 1) is encrypted using the user public key. The encrypted symmetric key is saved into the message.
+Messages is pushed to Kafka queue.
+
+## Wish to be forgotten
+
+When a user private key is removed, any messages in the queue encrypted with the user key are not accessible anymore. 
+Because each message is encrypted with a different symmetric key, even if one message key was discovered none of the other messages are jeopardised.
+
 ## Technologies
 
 Ths demo uses few technologies to accomplish the workflow
