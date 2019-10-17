@@ -72,3 +72,4 @@ Ths demo uses few technologies to accomplish the workflow
 * JUnit 5
     * Flapdoodle (mongo test)
     * Vertx Extention
+    * javaFaker
