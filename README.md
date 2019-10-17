@@ -10,14 +10,11 @@ Users are created using a REST API (See Swagger)
 
 Users holds a unique RSA encryption pair per user. This is used to encrypt messages per user.
 
-When a user is removed from the system or the private key is deleted the messages stored in the persistent queue are not accessible.
-
-This represent the right to be forgotten GDPR requirement.
-
 The main Chat page 
+
 > http://localhost:8080/private/chat.html
 
-Place a test message and see the message that was saved in Kafak and the message after decryption
+After login (tim/sausges) place a test message and see the message that was saved in Kafak (encrypted) and the message after decryption
 
 Check the log to see the inner process of message flow through the system.
 
@@ -40,6 +37,13 @@ Messages is pushed to Kafka queue.
 
 When a user private key is removed, any messages in the queue encrypted with the user key are not accessible anymore. 
 Because each message is encrypted with a different symmetric key, even if one message key was discovered none of the other messages are jeopardised.
+
+## Patterns
+
+* Repository
+* Service
+* Proxy
+* Oepn API 3
 
 ## Technologies
 
