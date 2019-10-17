@@ -1,39 +1,9 @@
-= Starter
 
-image:https://img.shields.io/badge/vert.x-3.8.2-purple.svg[link="https://vertx.io"]
-
-This application was generated using http://start.vertx.io
-
-== Building
-
-To launch your tests:
-```
-./mvnw clean test
-```
-
-To package your application:
-```
-./mvnw clean package
-```
-
-To run your application:
-```
-./mvnw clean compile exec:java
-```
-
-== Help
-
-* https://vertx.io/docs/[Vert.x Documentation]
-* https://stackoverflow.com/questions/tagged/vert.x?sort=newest&pageSize=15[Vert.x Stack Overflow]
-* https://groups.google.com/forum/?fromgroups#!forum/vertx[Vert.x User Group]
-* https://gitter.im/eclipse-vertx/vertx-users[Vert.x Gitter]
-
-
-== GDPR Chat
+# GDPR Chat
 
 This is a Demo application to demonstrate encryption of user senstative data (like chat conversations with support operator) into Kafka queues.
 
-=== Design
+## Design
 
 Users are created using a REST API (See Swagger)
 > http://localhost:8080/private/swagger/
@@ -51,7 +21,7 @@ Place a test message and see the message that was saved in Kafak and the message
 
 Check the log to see the inner process of message flow through the system.
 
-=== Technologies
+## Technologies
 
 Ths demo uses few technologies to accomplish the workflow
 
@@ -73,3 +43,36 @@ Ths demo uses few technologies to accomplish the workflow
     * Flapdoodle (mongo test)
     * Vertx Extention
     * javaFaker
+
+# Building
+
+## To launch your tests:
+```
+./mvnw clean test
+```
+
+## To package your application:
+```
+./mvnw clean package
+```
+
+## To run your application:
+
+start docker services
+```bash
+docker-compose up
+```
+start the application
+```
+java -jar target/patterns-0.0.1-SNAPSHOT-fat.jar 
+
+```
+login using the main chat page
+> http://localhost:8080/private/chat.html
+
+# Help
+
+* https://vertx.io/docs/[Vert.x Documentation]
+* https://stackoverflow.com/questions/tagged/vert.x?sort=newest&pageSize=15[Vert.x Stack Overflow]
+* https://groups.google.com/forum/?fromgroups#!forum/vertx[Vert.x User Group]
+* https://gitter.im/eclipse-vertx/vertx-users[Vert.x Gitter]
