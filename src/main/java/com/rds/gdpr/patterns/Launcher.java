@@ -19,7 +19,7 @@ public class Launcher {
 
     public static void main(String[] args) {
         Vertx vertx = Vertx.vertx();
-        vertx.deployVerticle(new UsersVerticle(), new DeploymentOptions().setConfig(config.getJsonObject("mongo")));
+        vertx.deployVerticle(new UsersVerticle(), new DeploymentOptions().setConfig(config));
         vertx.deployVerticle(new WebServerVerticle(), new DeploymentOptions().setConfig(config));
         vertx.deployVerticle(new EncryptionVerticle(), new DeploymentOptions().setConfig(config));
         vertx.deployVerticle(new DecryptionVerticle(), new DeploymentOptions().setConfig(config));

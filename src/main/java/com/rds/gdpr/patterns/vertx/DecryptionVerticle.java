@@ -1,5 +1,6 @@
 package com.rds.gdpr.patterns.vertx;
 
+import com.rds.gdpr.patterns.dto.ChatMessageDto;
 import com.rds.gdpr.patterns.model.ChatMessage;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
@@ -9,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 @Slf4j
 public class DecryptionVerticle extends AbstractVerticle {
@@ -27,7 +29,9 @@ public class DecryptionVerticle extends AbstractVerticle {
         KafkaConsumer.create(vertx, config)
                 .handler(record -> {
                     log.info("Processing key={} value={} ,partition={} ,offset={}", record.key(), record.value(), record.partition(), record.offset());
-                    vertx.eventBus().publish("chat-service-outbound", Json.decodeValue(record.value().toString(), ChatMessage.class));
+                    message(Json.decodeValue(record.value().toString(), ChatMessage.class), chatMessageDto -> {
+                        vertx.eventBus().publish("chat-service-outbound", Json.encode(chatMessageDto));
+                    });
                 })
                 .subscribe("chat-messages", startPromise);
     }
@@ -37,4 +41,7 @@ public class DecryptionVerticle extends AbstractVerticle {
         stopPromise.complete();
     }
 
+    private void message(ChatMessage message, Consumer<ChatMessageDto> handler) {
+        ChatMessageDto.builder().from(message.getFrom()).message(message.getMessage()).build();
+    }
 }

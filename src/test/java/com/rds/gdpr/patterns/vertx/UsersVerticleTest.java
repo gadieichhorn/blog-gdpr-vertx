@@ -17,10 +17,7 @@ class UsersVerticleTest extends AbstractMongoTest {
 
     @BeforeEach
     void beforeEach(Vertx vertx, VertxTestContext testContext) {
-        JsonObject mogno = new JsonObject()
-                .put("db_name", "gdpr")
-                .put("connection_string", "mongodb://localhost:" + MONGO_PORT);
-
+        JsonObject mogno = new JsonObject().put("mongo", mongoConfig);
         vertx.deployVerticle(new UsersVerticle(), new DeploymentOptions().setConfig(mogno),
                 testContext.succeeding(id -> testContext.completeNow()));
     }

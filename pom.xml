@@ -123,6 +123,11 @@
 
         <dependency>
             <groupId>io.vertx</groupId>
+            <artifactId>vertx-auth-shiro</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.vertx</groupId>
             <artifactId>vertx-web-client</artifactId>
             <exclusions>
                 <exclusion>
@@ -146,6 +151,11 @@
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-service-proxy</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-sockjs-service-proxy</artifactId>
         </dependency>
 
         <dependency>

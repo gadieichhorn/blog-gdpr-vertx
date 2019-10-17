@@ -4,13 +4,18 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.auth.AuthProvider;
+import io.vertx.ext.auth.shiro.ShiroAuth;
+import io.vertx.ext.auth.shiro.ShiroAuthRealmType;
 import io.vertx.ext.bridge.PermittedOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.api.contract.RouterFactoryOptions;
 import io.vertx.ext.web.api.contract.openapi3.OpenAPI3RouterFactory;
-import io.vertx.ext.web.handler.StaticHandler;
+import io.vertx.ext.web.handler.*;
 import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
+import io.vertx.ext.web.sstore.LocalSessionStore;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -19,7 +24,6 @@ public class WebServerVerticle extends AbstractVerticle {
     private HttpServer server;
 
     public void start(Promise future) {
-
 
         OpenAPI3RouterFactory.create(this.vertx, "webroot/swagger/chat.json", openAPI3RouterFactoryAsyncResult -> {
 
@@ -40,6 +44,14 @@ public class WebServerVerticle extends AbstractVerticle {
                     .setMountResponseContentTypeHandler(true))
                     .getRouter();
 
+            AuthProvider authProvider = ShiroAuth.create(vertx, ShiroAuthRealmType.PROPERTIES, new JsonObject());
+            router.route().handler(BodyHandler.create());
+            router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)).setAuthProvider(authProvider));
+
+            AuthHandler redirectAuthHandler = RedirectAuthHandler.create(authProvider, "/login.html");
+            router.route("/private/*").handler(redirectAuthHandler);
+            router.post("/login").handler(FormLoginHandler.create(authProvider));
+            router.route().handler(StaticHandler.create("webroot"));
 
             router.mountSubRouter("/eventbus", SockJSHandler.create(vertx)
                     .bridge(new BridgeOptions()
@@ -47,8 +59,6 @@ public class WebServerVerticle extends AbstractVerticle {
                                     .setAddress("chat-service-inbound"))
                             .addOutboundPermitted(new PermittedOptions()
                                     .setAddress("chat-service-outbound"))));
-
-            router.route().handler(StaticHandler.create("webroot"));
 
             server = vertx.createHttpServer(new HttpServerOptions().setPort(8080).setHost("localhost"))
                     .requestHandler(router).listen((ar) -> {
