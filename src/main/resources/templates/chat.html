@@ -38,15 +38,19 @@
 					</div>
 				</div>
 			</div>
+		</div>
+		<div class="row">
 			<div class="col-sm">
 				<h3>Chat history</h3>
-				<div id="chat" class="inset"></div>
+
+				<div class="card-columns" id="chat-cards">
+				</div>
+
 			</div>
 		</div>
 	</div>
 
 </div>
-
 
 <!-- Optional JavaScript -->
 <!-- jQuery first, then Popper.js, then Bootstrap JS -->
@@ -61,34 +65,9 @@
         crossorigin="anonymous"></script>
 <script src="//cdn.jsdelivr.net/sockjs/0.3.4/sockjs.min.js"></script>
 
-<script src="js/vertx-eventbus.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vertx/3.8.2/vertx-eventbus.min.js"></script>
 
-<script>
-
-	var eb = new EventBus("/eventbus/");
-	eb.onopen = function () {
-		eb.registerHandler("chat-service-outbound", function (err, msg) {
-			console.log(msg);
-	       $('#chat').append(msg.body + "\n");
-		});
-	};
-
-	$('#submit').on('click', function(event) {
-		event.preventDefault(); // To prevent following the link (optional)
-		var message = $('#input').val();
-
-		if (message.length > 0) {
-			var myObj = {from: "tim", message: message};
-			console.log(myObj);
-			eb.publish("chat-service-inbound", myObj);
-			$('#input').val("");
-		}
-	});
-
-
-
-
-</script>
+<script src="js/chat.js"></script>
 
 </body>
 </html>
