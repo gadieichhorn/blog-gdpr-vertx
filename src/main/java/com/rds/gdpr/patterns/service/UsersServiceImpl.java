@@ -60,6 +60,19 @@ public class UsersServiceImpl implements UsersService {
     }
 
     @Override
+    public void getUserByName(String name, OperationRequest context, Handler<AsyncResult<OperationResponse>> handler) {
+        log.info("Context: {}", context.toJson());
+        log.info("Name: {}", name);
+        usersRepository.findByName(name, find ->
+                handler.handle(find
+                        .map(user -> user
+                                .map(model -> OperationResponse.completedWithJson(Json.encodeToBuffer(UserDto.of(model))))
+                                .orElse(OperationResponse.completedWithPlainText(Buffer.buffer("Not Found")).setStatusCode(404)))
+                        .otherwise(throwable -> OperationResponse.completedWithPlainText(Buffer.buffer(throwable.getMessage()))
+                                .setStatusCode(500))));
+    }
+
+    @Override
     public void deleteUser(String id, OperationRequest context, Handler<AsyncResult<OperationResponse>> handler) {
         log.info("Context: {}", context.toJson());
         usersRepository.delete(id, delete ->

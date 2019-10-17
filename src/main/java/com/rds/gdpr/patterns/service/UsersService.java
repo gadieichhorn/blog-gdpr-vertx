@@ -18,6 +18,8 @@ public interface UsersService {
 
     void getUser(String id, OperationRequest context, Handler<AsyncResult<OperationResponse>> resultHandler);
 
+    void getUserByName(String name, OperationRequest context, Handler<AsyncResult<OperationResponse>> resultHandler);
+
     void deleteUser(String id, OperationRequest context, Handler<AsyncResult<OperationResponse>> resultHandler);
 
     void createUserMessage(String id, String body, OperationRequest context, Handler<AsyncResult<OperationResponse>> resultHandler);

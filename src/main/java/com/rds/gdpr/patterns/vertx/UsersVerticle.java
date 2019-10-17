@@ -1,5 +1,6 @@
 package com.rds.gdpr.patterns.vertx;
 
+import com.rds.gdpr.patterns.model.User;
 import com.rds.gdpr.patterns.repository.UsersMongoRepository;
 import com.rds.gdpr.patterns.repository.UsersRepository;
 import com.rds.gdpr.patterns.service.UsersService;
@@ -36,7 +37,18 @@ public class UsersVerticle extends AbstractVerticle {
         consumer = serviceBinder
                 .setAddress(UsersService.ADDRESS)
                 .register(UsersService.class, new UsersServiceImpl(usersRepository, vertx.eventBus()));
-        startPromise.complete();
+
+        usersRepository.findByName("tim", find -> {
+            if (find.succeeded()) {
+                if (find.result().isPresent()) {
+                    startPromise.complete();
+                } else {
+                    usersRepository.save(User.builder().name("tim").build(), saved -> startPromise.complete());
+                }
+            } else {
+                startPromise.fail(find.cause());
+            }
+        });
     }
 
     @Override

@@ -16,6 +16,7 @@ import io.vertx.ext.web.handler.*;
 import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.ext.web.sstore.LocalSessionStore;
+import io.vertx.ext.web.templ.thymeleaf.ThymeleafTemplateEngine;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -25,7 +26,7 @@ public class WebServerVerticle extends AbstractVerticle {
 
     public void start(Promise future) {
 
-        OpenAPI3RouterFactory.create(this.vertx, "webroot/swagger/chat.json", openAPI3RouterFactoryAsyncResult -> {
+        OpenAPI3RouterFactory.create(this.vertx, "webroot/private/swagger/chat.json", openAPI3RouterFactoryAsyncResult -> {
 
             if (openAPI3RouterFactoryAsyncResult.failed()) {
                 Throwable exception = openAPI3RouterFactoryAsyncResult.cause();
@@ -53,11 +54,31 @@ public class WebServerVerticle extends AbstractVerticle {
             router.post("/login").handler(FormLoginHandler.create(authProvider));
             router.route().handler(StaticHandler.create("webroot"));
 
+            final ThymeleafTemplateEngine engine = ThymeleafTemplateEngine.create(vertx);
+
+            router.get("/private/chat.html").handler(ctx -> {
+                // we define a hardcoded title for our application
+                JsonObject data = new JsonObject()
+                        .put("welcome", ctx.user().principal().getValue("username"));
+
+                // and now delegate to the engine to render it.
+                engine.render(data, "templates/chat.html", res -> {
+                    if (res.succeeded()) {
+                        ctx.response().end(res.result());
+                    } else {
+                        log.warn("Failed to render page: {}", res.cause().getMessage());
+                        ctx.fail(res.cause());
+                    }
+                });
+            });
+
             router.mountSubRouter("/eventbus", SockJSHandler.create(vertx)
                     .bridge(new BridgeOptions()
                             .addInboundPermitted(new PermittedOptions()
+//                                    .setRequiredAuthority("write-messages")
                                     .setAddress("chat-service-inbound"))
                             .addOutboundPermitted(new PermittedOptions()
+//                                    .setRequiredAuthority("read-messages")
                                     .setAddress("chat-service-outbound"))));
 
             server = vertx.createHttpServer(new HttpServerOptions().setPort(8080).setHost("localhost"))

@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
-public class UsersRepositoryImpl {
+public class UsersRepositoryImpl implements UsersRepository {
 
     private static final String COLLECTION = "users";
 
@@ -23,6 +23,14 @@ public class UsersRepositoryImpl {
     public void findById(String id, Handler<AsyncResult<Optional<User>>> handler) {
         log.debug("ID: {}", id);
         client.findOne(COLLECTION, new JsonObject().put("_id", id), null, find ->
+                handler.handle(find
+                        .map(json -> Optional.ofNullable(json).map(model -> model.mapTo(User.class)))));
+    }
+
+    @Override
+    public void findByName(String name, Handler<AsyncResult<Optional<User>>> handler) {
+        log.debug("NAME: {}", name);
+        client.findOne(COLLECTION, new JsonObject().put("name", name), null, find ->
                 handler.handle(find
                         .map(json -> Optional.ofNullable(json).map(model -> model.mapTo(User.class)))));
     }

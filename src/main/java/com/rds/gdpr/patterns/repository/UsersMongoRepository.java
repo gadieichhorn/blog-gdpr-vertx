@@ -29,6 +29,14 @@ public class UsersMongoRepository implements UsersRepository {
     }
 
     @Override
+    public void findByName(String name, Handler<AsyncResult<Optional<User>>> handler) {
+        log.debug("NAME: {}", name);
+        client.findOne(COLLECTION, new JsonObject().put("name", name), null, find ->
+                handler.handle(find
+                        .map(json -> Optional.ofNullable(json).map(model -> model.mapTo(User.class)))));
+    }
+
+    @Override
     public void findAll(Handler<AsyncResult<List<User>>> handler) {
         client.find(COLLECTION, new JsonObject(), all ->
                 handler.handle(all

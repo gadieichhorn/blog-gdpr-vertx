@@ -38,7 +38,7 @@ public class ChatMessageCipherHelper {
                         DES.loadKey(decryptedKey, key ->
                                 DES.decrypt(chatMessage.getMessage(), key, message ->
                                         handler.accept(ChatMessageDto.builder()
-                                                .from(user.getId())
+                                                .from(user.getName())
                                                 .message(message)
                                                 .build())))));
     }

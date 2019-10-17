@@ -33,6 +33,14 @@ public class UsersRepositoryStab implements UsersRepository {
     }
 
     @Override
+    public void findByName(String name, Handler<AsyncResult<Optional<User>>> handler) {
+        log.info("NAME: {}", name);
+        handler.handle(Future.succeededFuture(users.values().stream()
+                .filter(user -> user.getName().equals(name))
+                .findFirst()));
+    }
+
+    @Override
     public void save(User user, Handler<AsyncResult<String>> handler) {
 
     }

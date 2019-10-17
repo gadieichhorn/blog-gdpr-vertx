@@ -11,6 +11,8 @@ public interface UsersRepository {
 
     void findById(String id, Handler<AsyncResult<Optional<User>>> handler);
 
+    void findByName(String name, Handler<AsyncResult<Optional<User>>> handler);
+
     void findAll(Handler<AsyncResult<List<User>>> handler);
 
     void save(User user, Handler<AsyncResult<String>> handler);

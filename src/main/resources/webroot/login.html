@@ -14,28 +14,31 @@
 <body>
 
 <div class="container">
-	<h2>Please login</h2><br>
-
-	<br>
-	(Username is 'tim', password is 'sausages')
-	<br>
-	<br>
-
-	<form action="/login" method="post">
-		<div>
-			<label>Username:</label>
-			<input type="text" name="username"/>
+	<div class="row">
+		<div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
+			<div class="card my-5">
+				<div class="card-body">
+					<h5 class="card-title text-center">Sign In</h5>
+					<p> (Username is 'tim', password is 'sausages')</p>
+					<form action="/login" method="post">
+						<div class="form-label-group">
+							<label for="inputUsername">User Name</label>
+							<input type="text" name="username" id="inputUsername" class="form-control"
+							       placeholder="Username"
+							       required autofocus>
+						</div>
+						<div class="form-label-group">
+							<label for="inputPassword">Password</label>
+							<input type="password" name="password" id="inputPassword" class="form-control"
+							       placeholder="Password"
+							       required>
+						</div>
+						<button class="btn btn-lg btn-primary btn-block text-uppercase" type="submit">Sign in</button>
+					</form>
+				</div>
+			</div>
 		</div>
-		<div>
-			<label>Password:</label>
-			<input type="password" name="password"/>
-		</div>
-		<div>
-			<input type="submit" value="Log In"/>
-		</div>
-	</form>
-
+	</div>
 </div>
-
 </body>
 </html>
