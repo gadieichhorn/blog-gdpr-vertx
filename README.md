@@ -59,6 +59,8 @@ Ths demo uses few technologies to accomplish the workflow
     * Apache Kafka Client
     * MongoDB Client
 * Java Cipher
+    * RSA
+    * DES
 * Docker/Compose
     * Zookeeper
     * Apache Kafka

@@ -22,6 +22,4 @@ public interface UsersService {
 
     void deleteUser(String id, OperationRequest context, Handler<AsyncResult<OperationResponse>> resultHandler);
 
-    void createUserMessage(String id, String body, OperationRequest context, Handler<AsyncResult<OperationResponse>> resultHandler);
-
 }

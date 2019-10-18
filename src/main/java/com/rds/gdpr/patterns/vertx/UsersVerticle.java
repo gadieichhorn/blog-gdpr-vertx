@@ -31,9 +31,11 @@ public class UsersVerticle extends AbstractVerticle {
 
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
+
         mongoClient = MongoClient.createShared(vertx, config().getJsonObject("mongo"));
         usersRepository = new UsersMongoRepository(mongoClient);
         serviceBinder = new ServiceBinder(this.vertx);
+
         consumer = serviceBinder
                 .setAddress(UsersService.ADDRESS)
                 .register(UsersService.class, new UsersServiceImpl(usersRepository, vertx.eventBus()));

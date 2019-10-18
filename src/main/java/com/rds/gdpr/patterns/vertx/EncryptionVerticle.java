@@ -39,13 +39,8 @@ public class EncryptionVerticle extends AbstractVerticle {
 
         producer = KafkaProducer.create(vertx, config);
 
-        vertx.eventBus().<JsonObject>localConsumer("chat-service-inbound")
-                .handler(message ->
-                        message(message, chatMessageDto ->
-                                user(chatMessageDto.getFrom(), user ->
-                                        ChatMessageCipherHelper.getInstance().encrypt(user, chatMessageDto, encrypted ->
-                                                producer.write(KafkaProducerRecord.create("chat-messages", Json.encode(encrypted)), published -> {
-                                                })))));
+        vertx.eventBus().<JsonObject>localConsumer("chat-service-inbound").handler(this::handler);
+
         startPromise.complete();
     }
 
@@ -53,6 +48,14 @@ public class EncryptionVerticle extends AbstractVerticle {
     public void stop(Promise<Void> stopPromise) throws Exception {
         mongoClient.close();
         stopPromise.complete();
+    }
+
+    private void handler(Message<JsonObject> message) {
+        message(message, chatMessageDto ->
+                user(chatMessageDto.getFrom(), user ->
+                        ChatMessageCipherHelper.getInstance().encrypt(user, chatMessageDto, encrypted ->
+                                producer.write(KafkaProducerRecord.create("chat-messages", Json.encode(encrypted)), published ->
+                                        log.debug("Published: {}", chatMessageDto)))));
     }
 
     private void user(String name, Consumer<User> handler) {

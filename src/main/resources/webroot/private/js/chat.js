@@ -30,7 +30,6 @@ $( document ).ready(function() {
             card.appendChild(cardBody);
 
             cards.appendChild(card);
-
 		});
 	};
 
